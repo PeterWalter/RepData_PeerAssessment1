@@ -58,6 +58,7 @@ Firts of all is to load all the required libraries for processing
 ```r
 library(dplyr)
 library(ggplot2)
+library(lattice)
 ```
 #### Load the Data
 The data was loaded from the provided file **activity.csv** which was in the [Github fork](http://github.com/rdpeng/RepData_PeerAssessment1).
@@ -136,7 +137,7 @@ Group the data by date and then create a new column called sum which will be the
 ```r
 # group the data by date
 by_date <- group_by(DT, date)
-stepsum <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
+stepsum <- summarize(by_date, sum = sum(steps, na.rm = TRUE))
 ```
 Generate histogram
 
@@ -144,7 +145,7 @@ Generate histogram
 hist(stepsum$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
 ```
 
-![plot of chunk Total_steps_histo](figure/Total_steps_histo-1.png) 
+![plot of chunk Total_steps_histo](./figure/Total_steps_histo-1.png) 
 Calculate the mean and median
 
 ```r
@@ -167,7 +168,7 @@ ave_steps <- DT %>%
 plot(ave_steps$interval, ave_steps$average,  type ="l", xlab = " 5-minute Steps Intervals", ylab ="Average steps", main = "Average Daily Activity", col ="blue")
 ```
 
-![plot of chunk A_5-minute_interval](figure/A_5-minute_interval-1.png) 
+![plot of chunk A_5-minute_interval](./figure/A_5-minute_interval-1.png) 
 
 ```r
 max <- filter(ave_steps, average == max(average))
@@ -203,6 +204,38 @@ stepsum1 <- summarize(date_group, sum = sum(steps))
 hist(stepsum1$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "blue")
 ```
 
-![plot of chunk New_Histo](figure/New_Histo-1.png) 
-The 
+![plot of chunk New_Histo](./figure/New_Histo-1.png) 
+
+```r
+means <- mean(stepsum1$sum)
+medians <- median(stepsum1$sum)
+```
+The new mean total steps taken per day is **1.0766189 &times; 10<sup>4</sup>** and the median is **1.0766189 &times; 10<sup>4</sup>**.    
+These values totally differ from the ones which had missing values. The impact of imputing missing values is that we end up with different results from the original data, whilst we do not have a reason of why the data was missing in the first place. So imputing values total affect the outcome of the research.  
+
 #### Activity patterns between weekdays and weekends
+
+```r
+days <- mutate(newDT, dayname = weekdays(date))
+DTT <- mutate(days, day = as.factor(ifelse(dayname == "Saturday"| dayname == "Sunday", "Weekend", "Weekday")))
+Weekends <- DTT %>%
+        filter(day == "Weekend")
+      
+Weekdays <- DTT %>%
+        filter(day == "Weekend")
+
+activity_wend <- aggregate(steps ~ interval, Weekends, mean)
+activity_wdy <- aggregate(steps ~ interval, Weekdays, mean)
+```
+The plot of the weekday and weekend is shown below
+
+```r
+par(mfrow = c(2,1))
+
+plot(activity_wend$interval, activity_wend$steps, type ="l", main ="Weekend mean Steps", xlab = "5-minute intervals", ylab ="Number of Steps")
+plot(activity_wdy$interval, activity_wdy$steps, type ="l", main ="Weekdays mean Steps", ylab = "Number of Steps", xlab = " 5- Minute Intervals")
+```
+
+![plot of chunk planel_plot](./figure/planel_plot-1.png) 
+
+

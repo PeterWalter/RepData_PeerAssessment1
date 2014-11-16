@@ -97,7 +97,12 @@ mediansteps <- median(steps$sum)
 The mean total steps taken per day is **`r meansteps`** and the median is **`r mediansteps`**.  
 
 #### Average daily activity pattern
-
+```{r}
+ave_steps <- by_date %>%
+        summarize(average = mean(steps, na.rm= TRUE)) %>%
+        arrange(desc(average)) %>%
+        filter (1)
+```
 
 #### Imputing missing values
 #### Activity patterns between weekdays and weekends

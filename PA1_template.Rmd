@@ -5,7 +5,9 @@ date: "Sunday, November 16, 2014"
 output:
 html_document:
 keep_md: yes
+
 ---
+opts_chunk$set(fig.path = "./figures/") # set path for figures
 ## Introduction
 It is now possible to collect a large amount of data about personal
 movement using activity monitoring devices such as a
@@ -82,27 +84,72 @@ Group the data by date and then create a new column called sum which will be the
 ```{r}
 # group the data by date
 by_date <- group_by(DT, date)
-steps <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
+stepsum <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
 ```
 Generate histogram
-```{r}
-hist(steps$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
+```{r Total_steps_histo, results='hide'}
+
+hist(stepsum$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
 ```
 Calculate the mean and median
 ```{r}
-meansteps <- mean(steps$sum)
-mediansteps <- median(steps$sum)
+meansteps <- mean(stepsum$sum)
+mediansteps <- median(stepsum$sum)
 ```
 
 The mean total steps taken per day is **`r meansteps`** and the median is **`r mediansteps`**.  
 
 #### Average daily activity pattern
-```{r}
-ave_steps <- by_date %>%
-        summarize(average = mean(steps, na.rm= TRUE)) %>%
-        arrange(desc(average)) %>%
-        filter (1)
+plot of the  5-minute interval and average number of steps taken
+
+```{r A_5-minute_interval, results ='hide'}
+
+ave_steps <- DT %>%
+        group_by(interval) %>%
+        select(steps)%>%
+        summarize(average = mean(steps, na.rm= TRUE)) 
+
+plot(ave_steps$interval, ave_steps$average,  type ="l", xlab = " 5-minute Steps Intervals", ylab ="Average steps", main = "Average Daily Activity", col ="blue")
 ```
+```{r}
+max <- filter(ave_steps, average == max(average))
+HighestAve <- max[,1]
+```  
+It can be said that the highest 5-minute interval is **`r HighestAve`**.  
 
 #### Imputing missing values
+``` {r}
+MissingTotal <- sum(is.na(DT$steps))
+```  
+The total number of missng values is **`r MissingTotal`**.  
+  
+    
+For the calculation for filling missing values will be done using the average of all total values in the dataset. this is because some days do not have values at all.  
+  
+```{r}
+# creating a new column with taotal step average
+DTA <-mutate(DT, meanI = mean(steps, na.rm = TRUE), fnlsteps = ifelse(is.na(steps),meanI, steps))
+```
+```{r}
+# creating new Data Table with no missing values.
+newDT <- select(DTA, steps = fnlsteps, date, interval)
+```
+Histogram of total steps taken each data.
+```{r New_Histo}
+date_group <- group_by(newDT, date)
+stepsum1 <- summarize(date_group, sum = sum(steps))
+hist(stepsum1$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "blue")
+```  
+```{r}
+means <- mean(stepsum1$sum)
+medians <- median(stepsum1$sum)
+```
+The new mean total steps taken per day is **`r means`** and the median is **`r medians`**.    
+These values totally differ from the ones which had missing values. The impact of imputing missing values is that we end up with different results from the original data, whilst we do not have a reason of why the data was missing in the first place. So imputing values total affect the outcome of the research.  
+
 #### Activity patterns between weekdays and weekends
+```{r}
+DTT <- mutate(newDT, day = ifelse(weekdays(date)) %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
+```
+
+The plot of the weekday and weekend is shown below

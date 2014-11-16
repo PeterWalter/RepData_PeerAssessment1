@@ -1,6 +1,13 @@
-# Reproducible Research: Peer Assignment 1
-Peter Chifamba  
-Sunday, November 16, 2014  
+---
+title: 'Reproducible Research: Peer Assignment 1'
+author: "Peter Chifamba"
+date: "Sunday, November 16, 2014"
+output:
+html_document:
+keep_md: yes
+
+---
+opts_chunk$set(fig.path = "./figures/") # set path for figures
 ## Introduction
 It is now possible to collect a large amount of data about personal
 movement using activity monitoring devices such as a
@@ -30,13 +37,13 @@ site:
 The variables included in this dataset are:
 
 * **steps**: Number of steps taking in a 5-minute interval (missing
-    values are coded as `NA`)
+values are coded as `NA`)
 
 * **date**: The date on which the measurement was taken in YYYY-MM-DD
-    format
+format
 
 * **interval**: Identifier for the 5-minute interval in which
-    measurement was taken
+measurement was taken
 
 
 
@@ -50,22 +57,6 @@ Firts of all is to load all the required libraries for processing
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 library(ggplot2)
 ```
 #### Load the Data
@@ -139,34 +130,79 @@ Change the date values to date and then the data frame to data table using dplyr
 DT <- tbl_df(Data)
 DT$date <- as.Date(DT$date)
 ```
-  
-  
 #### Steps taken per Day
 Group the data by date and then create a new column called sum which will be the sum of steps taken per day
 
 ```r
 # group the data by date
 by_date <- group_by(DT, date)
-steps <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
+stepsum <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
 ```
 Generate histogram
 
 ```r
-hist(steps$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
+hist(stepsum$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
 ```
 
-![](./PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+![plot of chunk Total_steps_histo](figure/Total_steps_histo-1.png) 
 Calculate the mean and median
 
 ```r
-meansteps <- mean(steps$sum)
-mediansteps <- median(steps$sum)
+meansteps <- mean(stepsum$sum)
+mediansteps <- median(stepsum$sum)
 ```
 
 The mean total steps taken per day is **9354.2295082** and the median is **10395**.  
 
-### Average daily activity pattern
+#### Average daily activity pattern
+plot of the  5-minute interval and average number of steps taken
 
 
-### Imputing missing values
-### Activity patterns between weekdays and weekends
+```r
+ave_steps <- DT %>%
+        group_by(interval) %>%
+        select(steps)%>%
+        summarize(average = mean(steps, na.rm= TRUE)) 
+
+plot(ave_steps$interval, ave_steps$average,  type ="l", xlab = " 5-minute Steps Intervals", ylab ="Average steps", main = "Average Daily Activity", col ="blue")
+```
+
+![plot of chunk A_5-minute_interval](figure/A_5-minute_interval-1.png) 
+
+```r
+max <- filter(ave_steps, average == max(average))
+HighestAve <- max[,1]
+```
+It can be said that the highest 5-minute interval is **835**.  
+
+#### Imputing missing values
+
+```r
+MissingTotal <- sum(is.na(DT$steps))
+```
+The total number of missng values is **2304**.  
+  
+    
+For the calculation for filling missing values will be done using the average of all total values in the dataset. this is because some days do not have values at all.  
+  
+
+```r
+# creating a new column with taotal step average
+DTA <-mutate(DT, meanI = mean(steps, na.rm = TRUE), fnlsteps = ifelse(is.na(steps),meanI, steps))
+```
+
+```r
+# creating new Data Table with no missing values.
+newDT <- select(DTA, steps = fnlsteps, date, interval)
+```
+Histogram of total steps taken each data.
+
+```r
+date_group <- group_by(newDT, date)
+stepsum1 <- summarize(date_group, sum = sum(steps))
+hist(stepsum1$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "blue")
+```
+
+![plot of chunk New_Histo](figure/New_Histo-1.png) 
+The 
+#### Activity patterns between weekdays and weekends

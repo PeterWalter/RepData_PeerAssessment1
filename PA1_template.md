@@ -1,11 +1,6 @@
----
-title: 'Reproducible Research: Peer Assignment 1'
-author: "Peter Chifamba"
-date: "Sunday, November 16, 2014"
-output:
-html_document:
-keep_md: yes
----
+# Reproducible Research: Peer Assignment 1
+Peter Chifamba  
+Sunday, November 16, 2014  
 ## Introduction
 It is now possible to collect a large amount of data about personal
 movement using activity monitoring devices such as a
@@ -35,13 +30,13 @@ site:
 The variables included in this dataset are:
 
 * **steps**: Number of steps taking in a 5-minute interval (missing
-values are coded as `NA`)
+    values are coded as `NA`)
 
 * **date**: The date on which the measurement was taken in YYYY-MM-DD
-format
+    format
 
 * **interval**: Identifier for the 5-minute interval in which
-measurement was taken
+    measurement was taken
 
 
 
@@ -52,52 +47,126 @@ dataset.
 
 ### Loading and processing the data
 Firts of all is to load all the required libraries for processing
-```{r}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(ggplot2)
 ```
 #### Load the Data
 The data was loaded from the provided file **activity.csv** which was in the [Github fork](http://github.com/rdpeng/RepData_PeerAssessment1).
-```{r}
+
+```r
 Data <- read.csv("activity.csv",  na.strings ="NA", stringsAsFactor = FALSE)
 ```
 
 The state of the data was checked by performing a `summary` of the data, checking the `header`, `tail` and `structure` of the data.
 
-```{r, echo=TRUE}
+
+```r
 summary(Data)
+```
+
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
+```
+
+```r
 head(Data)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
 tail(Data)
+```
+
+```
+##       steps       date interval
+## 17563    NA 2012-11-30     2330
+## 17564    NA 2012-11-30     2335
+## 17565    NA 2012-11-30     2340
+## 17566    NA 2012-11-30     2345
+## 17567    NA 2012-11-30     2350
+## 17568    NA 2012-11-30     2355
+```
+
+```r
 str(Data)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 #### Process the data into a suitable format for analysis 
 Change the date values to date and then the data frame to data table using dplyr for processing
 
-``` {r}
+
+```r
 DT <- tbl_df(Data)
 DT$date <- as.Date(DT$date)
-```    
+```
+  
+  
 #### Steps taken per Day
 Group the data by date and then create a new column called sum which will be the sum of steps taken per day
-```{r}
+
+```r
 # group the data by date
 by_date <- group_by(DT, date)
 steps <- summarize(by_date, sum =(sum(steps, na.rm = TRUE)))
 ```
 Generate histogram
-```{r}
+
+```r
 hist(steps$sum, breaks = 5, main ="Total Steps Taken per Day", xlab =" Steps taken", col = "green")
 ```
+
+![](./PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 Calculate the mean and median
-```{r}
+
+```r
 meansteps <- mean(steps$sum)
 mediansteps <- median(steps$sum)
 ```
 
-The mean total steps taken per day is **`r meansteps`** and the median is **`r mediansteps`**.  
+The mean total steps taken per day is **9354.2295082** and the median is **10395**.  
 
-#### Average daily activity pattern
+### Average daily activity pattern
 
 
-#### Imputing missing values
-#### Activity patterns between weekdays and weekends
+### Imputing missing values
+### Activity patterns between weekdays and weekends
